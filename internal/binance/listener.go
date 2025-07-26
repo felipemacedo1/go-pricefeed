@@ -8,8 +8,14 @@ import (
 )
 
 type PriceUpdate struct {
-	Symbol string  `json:"s"`
-	Price  float64 `json:"c,string"`
+	Symbol     string  `json:"s"`
+	Timeframe  string  `json:"timeframe"`
+	OpenPrice  float64 `json:"o,string"`
+	HighPrice  float64 `json:"h,string"`
+	LowPrice   float64 `json:"l,string"`
+	ClosePrice float64 `json:"c,string"`
+	Volume     float64 `json:"v,string"`
+	Timestamp  int64   `json:"E"` // Event time (ms since epoch)
 }
 
 // ListenPriceStream conecta ao websocket da Binance e envia atualizações de preço para o canal out
@@ -34,7 +40,12 @@ func ListenPriceStream(symbol string, out chan<- PriceUpdate) {
 			logrus.WithError(err).Warn("Falha ao parsear mensagem de preço")
 			continue
 		}
-		if update.Symbol != "" && update.Price != 0 {
+		// Valida todos os campos essenciais
+		if update.Symbol != "" && update.ClosePrice != 0 && update.OpenPrice != 0 && update.HighPrice != 0 && update.LowPrice != 0 && update.Volume != 0 && update.Timestamp != 0 {
+			// Preencher timeframe se necessário (exemplo: padrão 1m)
+			if update.Timeframe == "" {
+				update.Timeframe = "1m"
+			}
 			out <- update
 		}
 	}

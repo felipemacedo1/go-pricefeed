@@ -15,20 +15,30 @@ func StartDispatcher(updates <-chan binance.PriceUpdate, rds *redis.Client, db *
 	for update := range updates {
 		// Salva no Redis
 		key := fmt.Sprintf("price:%s", update.Symbol)
-		err := rds.Redis.Set(context.Background(), key, update.Price, rds.TTL).Err()
+		err := rds.Redis.Set(context.Background(), key, update.ClosePrice, rds.TTL).Err()
 		if err != nil {
 			logrus.WithError(err).Error("Erro ao salvar preço no Redis")
 		}
 
 		// Salva no PostgreSQL
 		_, err = db.Exec(
-			"INSERT INTO price_feed_snapshot (symbol, price, ts) VALUES ($1, $2, NOW())",
-			update.Symbol, update.Price,
+			`INSERT INTO price_history (
+				symbol, timeframe, open_price, high_price, low_price, close_price, volume, timestamp
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+			update.Symbol,
+			update.Timeframe,
+			update.OpenPrice,
+			update.HighPrice,
+			update.LowPrice,
+			update.ClosePrice,
+			update.Volume,
+			update.Timestamp,
 		)
 		if err != nil {
-			logrus.WithError(err).Error("Erro ao salvar preço no PostgreSQL")
+			logrus.WithError(err).Error("Erro ao salvar histórico de preço no PostgreSQL")
 		}
 
-		logrus.Infof("Processado %s: %.2f", update.Symbol, update.Price)
+		logrus.Infof("Processado %s %s: O=%.2f H=%.2f L=%.2f C=%.2f V=%.2f T=%v",
+			update.Symbol, update.Timeframe, update.OpenPrice, update.HighPrice, update.LowPrice, update.ClosePrice, update.Volume, update.Timestamp)
 	}
 }

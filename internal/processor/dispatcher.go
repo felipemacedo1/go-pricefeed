@@ -1,19 +1,16 @@
+package processor
+
 import (
     "github.com/growthfolio/go-pricefeed/internal/binance"
     "github.com/growthfolio/go-pricefeed/internal/redis"
-    "github.com/growthfolio/go-pricefeed/internal/postgres"
     "github.com/sirupsen/logrus"
     "context"
     "fmt"
-
+    "database/sql"
+)
 
 // StartDispatcher recebe atualizações de preço e salva no Redis e PostgreSQL
-func StartDispatcher(
-    updates <-chan binance.PriceUpdate,
-    rds *redis.Client,
-    db *postgres.DB,
-    ttlSeconds int,
-) {
+func StartDispatcher(updates <-chan binance.PriceUpdate, rds *redis.Client, db *sql.DB, ttlSeconds int) {
     for update := range updates {
         // Salva no Redis
         key := fmt.Sprintf("price:%s", update.Symbol)

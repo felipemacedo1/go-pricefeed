@@ -1,0 +1,32 @@
+# Ignore Go build artifacts
+/bin/
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Dependency directories
+vendor/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment files
+.env
+
+# Logs
+*.log
+
+# Coverage reports
+coverage*
+
+# Docker
+*.pid
+
+# Node modules (if any)
+node_modules/

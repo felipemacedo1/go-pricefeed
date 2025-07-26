@@ -30,3 +30,7 @@ coverage*
 
 # Node modules (if any)
 node_modules/
+
+
+#doc desenvolvimento
+CHECKLIST_DESENVOLVIMENTO.txt
